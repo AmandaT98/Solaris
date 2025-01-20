@@ -1,20 +1,24 @@
+// Funktion för att hämta en API-nyckel från servern
 async function getApiKey() {
+    // Hämtar elementet med id "errorMessage" för att visa felmeddelanden om det behövs
     const errorMessage = document.getElementById("errorMessage");
     try {
+        // Skickar en POST-förfrågan till API:et för att få API-nyckeln
         const response = await fetch("https://n5n3eiyjb0.execute-api.eu-north-1.amazonaws.com/keys", {
             method: "POST",
         });
-
+         // Om förfrågan inte lyckas, visa felmeddelande.
         if (!response.ok) {
             if (errorMessage) {
                 errorMessage.innerText = `Failed to fetch API key: ${response.status}`;
             }
             throw new Error(`HTTP error: ${response.status}`);
         }
-
+        // Om förfrågan lyckas, returnera API-nyckeln.
         const data = await response.json();
         return data.key;
     } catch (error) {
+        // Logga eventuella fel och visa ett generellt felmeddelande
         console.error("Error fetching API key:", error);
         if (errorMessage) {
             errorMessage.innerText = "Unable to fetch API key.";
@@ -22,15 +26,19 @@ async function getApiKey() {
     }
 }
 
+// Funktion för att hämta information om planeter från API:et
 async function fetchPlanets(apiKey) {
+    // Hämtar elementet med id "errorMessage" för att visa felmeddelanden vid behov.
     const errorMessage = document.getElementById("errorMessage");
     try {
+        // Anropar API:et för att hämta planetsdata, med GET-metod och lägger till API-nyckeln i headers.
         const response = await fetch("https://n5n3eiyjb0.execute-api.eu-north-1.amazonaws.com/bodies", {
-            method: "GET",
-            headers: { "x-zocom": apiKey },
+            method: "GET", // Definierar att anropet ska vara en GET-begäran
+            headers: { "x-zocom": apiKey }, // Lägg till API-nyckeln som en header
         });
-
+        // Kontrollera om HTTP-svaret är ok
         if (!response.ok) {
+            // Om svaret inte är ok, visa ett felmeddelande.
             if (errorMessage) {
                 errorMessage.innerText = `Failed to fetch planets: ${response.status}`;
             }
@@ -41,23 +49,28 @@ async function fetchPlanets(apiKey) {
         return data;
     } catch (error) {
         console.error("Error fetching planets:", error);
+        // Visa ett generellt felmeddelande i HTML-elementet "errorMessage" om något går fel
         if (errorMessage) {
             errorMessage.innerText = "Unable to fetch planet data.";
         }
     }
 }
 
+// Funktion för att ladda data om solsystemet
 async function loadSolarSystemData() {
+    // Hämtar elementet med id "errorMessage" för att visa felmeddelanden vid behov
     const errorMessage = document.getElementById("errorMessage");
+    // Hämtar API-nyckeln genom att anropa funktionen getApiKey
     const apiKey = await getApiKey();
+    // Om ingen API-nyckel hittas, avsluta funktionen.
     if (!apiKey) return;
-
+    // Använder funktionen fetchPlanets för att hämta planetdata från API:et med API-nyckeln
     const planets = await fetchPlanets(apiKey);
     if (!planets || !planets.bodies) {
         if (errorMessage) {
             errorMessage.innerText = "No planet data available.";
         }
-        return;
+        return; // Avsluta funktionen om ingen data finns.
     }
 
     const pathname = window.location.pathname;
@@ -66,7 +79,7 @@ async function loadSolarSystemData() {
     const planet = planets.bodies.find(
         (p) => p.name.toLowerCase().trim() === planetName.toLowerCase().trim()
     );
-
+    // Om planeten inte hittas i datan, logga ett felmeddelande och visa det för användaren.
     if (!planet) {
         console.error("Planet not found:", planetName);
         if (errorMessage) {
@@ -78,7 +91,7 @@ async function loadSolarSystemData() {
     updatePlanetInfo(planet);
 }
 
-loadSolarSystemData();
+loadSolarSystemData(); // Anropar funktionen för att initiera laddning av solsystemets data.
 
 
 // Planetdata
@@ -93,6 +106,9 @@ const planets = {
     "Uranus": "Position: 7:e planeten från solen. Diameter: ~50 724 km. Temperatur: -224 °C. Atmosfär: Mest väte, helium och metan. Särskilt: Roterar på sidan, vilket ger extrema årstidsvariationer.",
     "Neptunus": "Position: 8:e planeten från solen. Diameter: ~49 244 km. Temperatur: -218 °C. Atmosfär: Mest väte, helium och metan. Särskilt: Har de starkaste vindarna i solsystemet, upp till 2 000 km/h."
 };
+
+
+//Sökfunktionen
 
 // Hämta referenser till HTML-element
 const searchInput = document.getElementById('searchInput');
